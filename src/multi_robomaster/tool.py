@@ -101,7 +101,9 @@ def get_subnets():
             continue
         # Get ipv4 stuff
         ipinfo = addrs[socket.AF_INET][0]
-        address = ipinfo['addr']
+        address = ipinfo['addr']            
+        if(address == "127.0.0.1"):
+            continue
         netmask = ipinfo['netmask']
         broadcast = ipinfo['broadcast']
 
@@ -172,7 +174,7 @@ class TelloProtocol(object):
 
 class TelloConnection(object):
 
-    def __init__(self, local_ip=conn.get_local_ip(), local_port=8889):
+    def __init__(self, local_ip="0.0.0.0", local_port=8889):
         self.local_ip = local_ip
         self.local_port = local_port
         self._sock = None

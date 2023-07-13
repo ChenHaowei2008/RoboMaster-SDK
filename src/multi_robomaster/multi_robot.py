@@ -266,8 +266,9 @@ class MultiDrone(MultiRobotBase):
         self._robot_sn_dict = {}
         self._robot_host_dict = {}
 
-    def initialize(self, robot_num=0):
+    def initialize(self, robot_num, sn_and_ip):
         self.robot_num = robot_num
+        self._robot_sn_dict = sn_and_ip
         self._client.start()
         self._robot_host_list = self._client.scan_multi_robot(robot_num)
 
@@ -336,19 +337,6 @@ class MultiDrone(MultiRobotBase):
             self._client.send(proto)
 
     def _get_sn(self, timeout=0):
-        self.send_command("sn?")
-        cur_time = time.time()
-        while self._client.queue.qsize() < self.robot_num:
-            if time.time() - cur_time > timeout:
-                raise Exception("get sn timeout")
-
-        while not self._client.queue.empty():
-            proto = self._client.queue.get()
-            if proto.text is None:
-                raise Exception("recv data is None")
-            self._robot_sn_dict[proto.text] = proto.host  # find host by sn
-            time.sleep(0.1)   # Tello BUG that reply ok in sn? command response
-
         return self._robot_sn_dict
 
     def number_id_by_sn(self, *id_sn: list, timeout=3):
@@ -359,7 +347,7 @@ class MultiDrone(MultiRobotBase):
         for id_, sn in id_sn:
             host = self._robot_sn_dict.get(sn, None)
             if host is None:
-                raise Exception("Tello {} does not exits".format(sn))
+                raise Exception("Tello {} does not exist".format(sn))
             if self._robot_id_dict.get(id_, None) is not None:
                 # one single id correspond to one single sn
                 raise Exception("id: {} has already exited".format(id_))
