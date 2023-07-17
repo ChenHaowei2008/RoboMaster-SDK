@@ -269,7 +269,8 @@ class MultiDrone(MultiRobotBase):
     def initialize(self, robot_num, sn_and_ip):
         self.robot_num = robot_num
         self._robot_sn_dict = sn_and_ip
-        self._client.start()
+        # Directly pass in the sn_and_ip dictionary cause the code used to scan is absolutely trash.
+        self._client.start(list(sn_and_ip.items()))
         self._robot_host_list = self._client.scan_multi_robot(robot_num)
 
     def close(self):
@@ -340,10 +341,12 @@ class MultiDrone(MultiRobotBase):
         return self._robot_sn_dict
 
     def number_id_by_sn(self, *id_sn: list, timeout=3):
+        # in theory i don't need this function anymore but im not touching it cause i don't wanna break it
+        # TODO: clean up 
         if not isinstance(id_sn, tuple) and not isinstance(id_sn, list):
             raise Exception("input type must be list or tuple")
 
-        self._get_sn(timeout)
+        # self._get_sn(timeout)
         for id_, sn in id_sn:
             host = self._robot_sn_dict.get(sn, None)
             if host is None:

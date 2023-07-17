@@ -174,17 +174,18 @@ class TelloProtocol(object):
 
 class TelloConnection(object):
 
-    def __init__(self, local_ip="0.0.0.0", local_port=8889):
+    def __init__(self, local_ip="192.168.0.204", local_port=1889): # TODO: Not hardcode the local_port and local_ip
         self.local_ip = local_ip
         self.local_port = local_port
         self._sock = None
         self.client_recieve_thread_flag = False   # for client recieve
         self._robot_host_list = []    # for scan robot
 
-    def start(self):
+    def start(self, ips):
         try:
             local_addr = (self.local_ip, self.local_port)
             self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # socket for sending cmd
+            self._robot_host_list = [(ip, self.local_port) for ip in ips]  # Just format the stuff properly
             self._sock.bind(local_addr)
         except Exception as e:
             logger.warning("udpConnection: create, host_addr:{0}, exception:{1}".format(self.local_ip, e))
@@ -252,7 +253,7 @@ class TelloConnection(object):
             for ip in possible_addr:
                 if ip in address:
                     continue
-                self._sock.sendto(b'command', (ip, self.local_port))
+                res = self._sock.sendto(b'command', (ip, self.local_port))
             if len(self._robot_host_list) >= num:
                 break
         return self._robot_host_list
@@ -277,7 +278,6 @@ class TelloConnection(object):
         while len(self._robot_host_list) < num:
             try:
                 resp, ip = self._sock.recvfrom(1024)
-                logger.info("FoundTello: from ip {1}_receive_task, recv msg: {0}".format(resp, ip))
                 ip = ''.join(str(ip[0]))
                 if resp.upper() == b'OK' and ip not in self._robot_host_list:
                     logger.info('FoundTello: Found Tello.The Tello ip is:%s\n' % ip)
@@ -295,8 +295,9 @@ class TelloClient(object):
         self.receive_thread = threading.Thread(target=self.recv, daemon=True)
         self.receive_thread_flag = True
 
-    def start(self):
-        self._conn.start()
+    def start(self, ips):
+        # Directly pass in ip
+        self._conn.start(ips)
         self.receive_thread.start()
 
     def close(self):
