@@ -16,3 +16,5 @@ The main things that I fixed were:
 2. Allows you to manually pass in a sn_and_ip dictionary, so that the code doesn't have to scan for the drones everytime you run it, and it prevents the issue of the drone returning "ok?" when asking for the serial number of the drone. This prevents the error of "{SN} does not exits!" error, even though your drone is connected to the wifi.
 
 The reason the second bug exists is because the code originaly code is ass, and the drone occasionally returns "ok" instead of the serial number when asking for the serial number :skull:
+
+Since my code only works if you maunlly enter in the ip and sn numbers, I have an exmpale script that will automatically extract them in /examples.
